@@ -2,9 +2,9 @@
 
 ## 1. User Request Journey & Diagram
 
-When a user wants to access `[www.foobar.com](https://www.foobar.com)`:
-1. The user types `[www.foobar.com](https://www.foobar.com)` into their web browser.
-2. The browser requests a DNS server to resolve the domain name `[www.foobar.com](https://www.foobar.com)` into an IP address.
+When a user wants to access `www.foobar.com`:
+1. The user types `www.foobar.com` into their web browser.
+2. The browser requests a DNS server to resolve the domain name `www.foobar.com` into an IP address.
 3. The DNS server responds with IP address `8.8.8.8`.
 4. The browser initiates an HTTP/HTTPS connection to server `8.8.8.8` via TCP/IP.
 5. Nginx receives the HTTP request and routes dynamic requests to the Application Server.
@@ -17,7 +17,7 @@ When a user wants to access `[www.foobar.com](https://www.foobar.com)`:
 |                              [ Browser Client ]                             |
 +--------------------------------------+--------------------------------------+
                                        |
-                                       | DNS Lookup: www.foobar.com -> 8.8.8.8
+                                       | DNS Lookup: [www.foobar.com](https://www.foobar.com) -> 8.8.8.8
                                        v
                         +--------------+--------------+
                         |          DNS Server         |
@@ -52,8 +52,8 @@ A server is a physical or virtual computer system running an operating system (s
 What is the role of the domain name?
 A domain name (e.g., foobar.com) provides a human-readable address to identify a website on the Internet instead of requiring users to memorize raw numerical IP addresses (e.g., 8.8.8.8).
 
-What type of DNS record www is in [www.foobar.com](https://www.foobar.com)?
-Since [www.foobar.com](https://www.foobar.com) directly maps to the IPv4 address 8.8.8.8, it is configured as an A record (Address Record). (Alternatively, if [www.foobar.com](https://www.foobar.com) points to foobar.com, it would be a CNAME record).
+What type of DNS record www is in www.foobar.com?
+Since www.foobar.com directly maps to the IPv4 address 8.8.8.8, it is configured as an A record (Address Record). (Alternatively, if www.foobar.com points to foobar.com, it would be a CNAME record).
 
 What is the role of the web server?
 The Web Server (Nginx) manages inbound HTTP/HTTPS connections from client browsers. It accepts requests, handles SSL/TLS termination, serves static assets (HTML, CSS, JS, images), and acts as a reverse proxy by routing dynamic requests to the Application Server.
