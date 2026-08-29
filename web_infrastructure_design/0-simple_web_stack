@@ -45,7 +45,8 @@ When a user wants to access `www.foobar.com`:
 |  | (Source files, scripts)           |   | (Relational data storage)         |  |
 |  +-----------------------------------+   +-------------------------------+  |
 +-----------------------------------------------------------------------------+
-2. Specifics of the Infrastructure
+
+## 2. Specifics of the Infrastructure
 What is a server?
 A server is a physical or virtual computer system running an operating system (such as Linux) that provides computational resources, services, programs, or data to other computers (clients) over a network.
 
@@ -67,7 +68,7 @@ The Database (MySQL) is a Relational Database Management System (RDBMS) responsi
 What is the server using to communicate with the computer of the user requesting the website?
 The communication relies on the TCP/IP protocol suite, specifically using HTTP (Port 80) or HTTPS (Port 443) over TCP sockets.
 
-3. Issues with this Infrastructure
+## 3. Issues with this Infrastructure
 Single Point of Failure (SPOF):
 Because all infrastructure components (Nginx, App Server, MySQL) run on a single physical/virtual machine, any hardware failure, OS crash, or network outage instantly brings down the entire website.
 
@@ -75,4 +76,4 @@ Downtime during Maintenance:
 Performing software updates, code deployments, or restarting services (such as Nginx or MySQL) requires interrupting server operations, causing immediate downtime for users.
 
 Inability to Scale (Scalability Bottleneck):
-A single machine can only scale vertically (by adding CPU, RAM, or storage). Under heavy traffic spikes, CPU/RAM resources will saturate, leading to slow response times or complete request drops because the architecture cannot scale horizontally across multiple servers.
+A single machine can only scale vertically (by adding CPU, RAM, or storage). Under heavy traffic spikes, CPU/RAM resources will saturate, leading to slow response times or complete request drops because the architecture  cannot scale horizontally across multiple servers.
