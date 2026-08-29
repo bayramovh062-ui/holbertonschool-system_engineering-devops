@@ -1,0 +1,108 @@
+# 1. Distributed Web Infrastructure
+
+## 1. User Request Journey & Diagram
+
+When a user wants to access `www.foobar.com`:
+1. The user types `www.foobar.com` into their web browser.
+2. The browser requests a DNS server to resolve `www.foobar.com` into the IP address of the Load Balancer (`8.8.8.8`).
+3. The DNS server responds with IP `8.8.8.8`.
+4. The client browser sends an HTTP request to the Load Balancer (HAproxy) at IP `8.8.8.8`.
+5. HAproxy receives the request and forwards it to one of the two web servers (Server 2 or Server 3) using a load-balancing algorithm.
+6. The selected Web Server (Nginx) processes static content or routes dynamic requests to the local Application Server.
+7. The Application Server processes application logic, executing **Write** operations on the **MySQL Primary** node and **Read** operations on the **MySQL Replica** node.
+8. The response flows back through the Web Server and HAproxy to the user's browser.
+
+```text
++-----------------------------------------------------------------------------+
+|                                    USER                                     |
+|                              [ Browser Client ]                             |
++--------------------------------------+--------------------------------------+
+                                       |
+                                       | DNS Lookup: [www.foobar.com](https://www.foobar.com) -> 8.8.8.8
+                                       v
+                        +--------------+--------------+
+                        |          DNS Server         |
+                        +--------------+--------------+
+                                       |
+                                       | HTTP Request (Port 80)
+                                       v
++-----------------------------------------------------------------------------+
+| SERVER 1: Load Balancer (IP: 8.8.8.8)                                       |
+|  +-----------------------------------------------------------------------+  |
+|  | HAproxy (Distributes incoming traffic to application servers)         |  |
+|  +-------------------+-------------------------------+-------------------+  |
++----------------------|-------------------------------|----------------------+
+                       |                               |
+        HTTP Request   |                               |   HTTP Request
+        (Forwarded)    v                               v   (Forwarded)
++--------------------------------------+   +--------------------------------------+
+| SERVER 2 (IP: 8.8.8.9)               |   | SERVER 3 (IP: 8.8.8.10)              |
+|  +--------------------------------+  |   |  +--------------------------------+  |
+|  | Web Server: Nginx              |  |   |  | Web Server: Nginx              |  |
+|  +---------------+----------------+  |   |  +---------------+----------------+  |
+|                  |                   |   |                  |                   |
+|                  v                   |   |                  v                   |
+|  +--------------------------------+  |   |  +--------------------------------+  |
+|  | Application Server             |  |   |  | Application Server             |  |
+|  | - Code Base                    |  |   |  | - Code Base                    |  |
+|  +---------------+----------------+  |   |  +---------------+----------------+  |
+|                  |                   |   |                  |                   |
+|                  v                   |   |                  v                   |
+|  +--------------------------------+  |   |  +--------------------------------+  |
+|  | Database: MySQL Primary        |  |   |  | Database: MySQL Replica        |  |
+|  | (Master - Read & Write)        |  |   |  | (Slave - Read Only)            |  |
+|  +---------------+----------------+  |   |  +--------------------------------+  |
++------------------|-------------------+   +--------------------------------------+
+                   |                                       ^
+                   |    Database Replication (Binlog)      |
+                   +---------------------------------------+
+2. Specifics of the Infrastructure
+For every additional element, why you are adding it:
+Load Balancer (HAproxy): Added to manage and distribute incoming user traffic across multiple web servers, preventing a single server from being overwhelmed and eliminating traffic bottlenecks.
+
+Second Application/Web Server: Added to achieve horizontal scaling (handling more concurrent requests) and to provide redundancy if one server crashes.
+
+Database Replica (MySQL Slave): Added to offload Read traffic from the Primary database, improving application performance and creating a real-time data backup.
+
+What distribution algorithm your load balancer is configured with and how it works:
+Round Robin: HAproxy is configured with the Round Robin algorithm. It works by distributing incoming client requests sequentially across the list of available backend web servers in a repeating cycle (e.g., Request 1 -> Server 2, Request 2 -> Server 3, Request 3 -> Server 2, and so on).
+
+Is your load-balancer enabling an Active-Active or Active-Passive setup?
+The Load Balancer enables an Active-Active setup for the web servers.
+
+Difference between Active-Active and Active-Passive:
+
+Active-Active: All configured backend servers actively process incoming user traffic simultaneously, sharing the overall load.
+
+Active-Passive: Only one server (Active) processes incoming traffic while the backup server (Passive/Standby) remains idle, taking over only when the active server fails.
+
+How a database Primary-Replica (Master-Slave) cluster works:
+In a Primary-Replica cluster, data synchronization occurs asynchronously:
+
+All data modifications (INSERT, UPDATE, DELETE) are written to the Primary database node.
+
+The Primary records these changes in a Binary Log (Binlog).
+
+The Replica node continuously reads the Primary's binary log and executes those same changes on its local database copy to remain synchronized.
+
+What is the difference between the Primary node and the Replica node in regard to the application:
+Primary Node (Master): Handles all Read and Write operations from the application. It is the single source of truth for dynamic data modification.
+
+Replica Node (Slave): Handles Read-Only operations from the application (such as fetching user profiles, reading posts). The application cannot execute write queries directly to the Replica node.
+
+3. Issues with this Infrastructure
+Single Points of Failure (SPOF):
+
+HAproxy (Load Balancer): There is only one Load Balancer server. If Server 1 crashes or goes offline, the entire website becomes completely inaccessible.
+
+MySQL Primary Database: If Server 2 fails, the MySQL Primary node goes down, rendering the application unable to execute any Write operations.
+
+Security Issues:
+
+No Firewall: Servers are not protected by a firewall (such as UFW or iptables), leaving ports exposed to unauthorized access and security threats.
+
+No HTTPS (Unencrypted Traffic): Traffic between client browsers and HAproxy uses plain HTTP (Port 80) without SSL/TLS certificates, exposing data to packet sniffing and Man-in-the-Middle (MitM) attacks.
+
+No Monitoring:
+
+There are no monitoring systems (such as Datadog, Nagios, or Prometheus) installed to track system health, CPU/RAM usage, network traffic, or service uptime. As a result, administrators will not receive automated alerts if services crash or experience performance degradation.
