@@ -1,20 +1,17 @@
-1. User Request Journey & Diagram
-When a user wants to access [www.foobar.com](https://www.foobar.com):
+# 0. Simple Web Stack
 
-The user types [www.foobar.com](https://www.foobar.com) into their web browser.
+## 1. User Request Journey & Diagram
 
-The browser requests a DNS server to resolve the domain name [www.foobar.com](https://www.foobar.com) into an IP address.
+When a user wants to access `[www.foobar.com](https://www.foobar.com)`:
+1. The user types `[www.foobar.com](https://www.foobar.com)` into their web browser.
+2. The browser requests a DNS server to resolve the domain name `[www.foobar.com](https://www.foobar.com)` into an IP address.
+3. The DNS server responds with IP address `8.8.8.8`.
+4. The browser initiates an HTTP/HTTPS connection to server `8.8.8.8` via TCP/IP.
+5. Nginx receives the HTTP request and routes dynamic requests to the Application Server.
+6. The Application Server executes the codebase, queries MySQL if needed, and generates an HTTP response.
+7. Nginx sends the HTTP response back to the user's browser.
 
-The DNS server responds with IP address 8.8.8.8.
-
-The browser initiates an HTTP/HTTPS connection to server 8.8.8.8 via TCP/IP.
-
-Nginx receives the HTTP request and routes dynamic requests to the Application Server.
-
-The Application Server executes the codebase, queries MySQL if needed, and generates an HTTP response.
-
-Nginx sends the HTTP response back to the user's browser.
-
+```text
 +-----------------------------------------------------------------------------+
 |                                    USER                                     |
 |                              [ Browser Client ]                             |
